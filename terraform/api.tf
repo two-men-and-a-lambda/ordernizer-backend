@@ -13,6 +13,15 @@ resource "aws_s3_bucket" "api_bucket" {
   }, var.tags)
 }
 
+resource "aws_s3_bucket_public_access_block" "api_bucket" {
+  bucket = aws_s3_bucket.api_bucket.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
 resource "aws_s3_bucket_object" "api_code_archive" {
   bucket = aws_s3_bucket.api_bucket.id
   key    = "${var.zipFile}"
@@ -31,6 +40,31 @@ resource "aws_s3_bucket_object" "api_code_archive" {
   }, var.tags)
 }
 
+resource "aws_s3_bucket" "database_bucket" {
+  bucket        = "${var.name_prefix}-database-bucket"
+  force_destroy = true
+
+  tags = merge({
+    Name = "${var.name_prefix}-database-bucket"
+  }, var.tags)
+}
+
+resource "aws_s3_bucket_versioning" "database_bucket" {
+  bucket = aws_s3_bucket.database_bucket.id
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+
+resource "aws_s3_bucket_public_access_block" "database_bucket" {
+  bucket = aws_s3_bucket.database_bucket.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
 resource "aws_lambda_function" "api_lambda" {
   function_name    = "${var.name_prefix}-api"
   role             = aws_iam_role.api_lambda_role.arn
@@ -42,6 +76,9 @@ resource "aws_lambda_function" "api_lambda" {
   handler          = "${var.sourceFile}.${var.handler}"
   memory_size      = 128
   publish          = true
+  layers = [
+    aws_lambda_layer_version.lambda_layer.arn
+    ]
 
   lifecycle {
     ignore_changes = [
@@ -129,7 +166,9 @@ resource "aws_apigatewayv2_stage" "api_gateway_default_stage" {
   api_id      = aws_apigatewayv2_api.api_gateway.id
   name        = "$default"
   auto_deploy = true
-  tags        = {}
+  tags = merge({
+    Name = "${var.name_prefix}-gateway-stage"
+  }, var.tags)
 
   access_log_settings {
     destination_arn = aws_cloudwatch_log_group.api_gateway_log_group.arn
@@ -151,7 +190,9 @@ resource "aws_apigatewayv2_stage" "api_gateway_default_stage" {
 resource "aws_cloudwatch_log_group" "api_gateway_log_group" {
   name              = "/aws/api_gateway_log_group/${aws_apigatewayv2_api.api_gateway.name}"
   retention_in_days = 14
-  tags              = {}
+  tags = merge({
+    Name = "${var.name_prefix}-gateway-logs"
+  }, var.tags)
 }
 
 resource "aws_apigatewayv2_integration" "api_gateway_integration" {
@@ -179,6 +220,14 @@ resource "aws_lambda_permission" "api_gateway_lambda_permission" {
   qualifier     = aws_lambda_alias.api_lambda_alias.name
   source_arn    = "${aws_apigatewayv2_api.api_gateway.execution_arn}/*/*"
 }
+
+resource "aws_lambda_layer_version" "lambda_layer" {
+  filename   = "${var.lambda_layer_name}.zip"
+  layer_name = "${var.lambda_layer_name}"
+
+  compatible_runtimes = ["python3.9"]
+}
+
 
 output "api_gateway_invoke_url" {
   description = "API gateway default stage invokation URL"

@@ -8,7 +8,7 @@ variable "name_prefix" {
 variable "tags" {
   description = "Resource tags"
   type        = map(string)
-  default     = {}
+  default = {}
 }
 
 #------------------------------------------------------------------------------
@@ -38,41 +38,49 @@ variable "aws_accounts_with_read_view_log_bucket" {
   default     = []
 }
 
-variable "zipFile" { 
+variable "zipFile" {
   description = "Local Path for Zipped Lambda Code"
-  type = string
-  default = "lambda.zip"
-  }
+  type        = string
+  default     = "lambda.zip"
+}
 
 variable "bucketName" {
-description = "Name for api code bucket"
-  type = string
-  default = "ordernizer-api-zip"
+  description = "Name for api code bucket"
+  type        = string
+  default     = "ordernizer-api-zip"
 
 
 }
 
 variable "runTime" {
   description = "Lambda Runtime for api function"
-  type = string
-  default = "python3.9"
+  type        = string
+  default     = "python3.9"
 }
 
 variable "sourceFolder" {
   description = "Folder containing python source code for the lambda"
-  type = string
-  default = "src"
+  type        = string
+  default     = "src"
 }
 
 variable "sourceFile" {
   description = "Main Python File for entry"
-  type = string
-  default = "router"
+  type        = string
+  default     = "router"
 }
 
-variable "handler"  {
+variable "handler" {
   description = "Handler function name"
-  type = string
-  default = "lambda_handler"
+  type        = string
+  default     = "lambda_handler"
 }
+
+variable "lambda_layer_name" {
+  description = "Name for the lambda layer containing all packages used by the python api"
+  type        = string
+  default     = "python_lambda_layer"
+}
+
+
 
