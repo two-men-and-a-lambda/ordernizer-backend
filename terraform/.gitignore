@@ -1,1 +1,3 @@
-.terraform/*
+.terraform/
+python/
+python_lambda_layer.zip
