@@ -77,7 +77,7 @@ resource "aws_lambda_function" "api_lambda" {
   memory_size      = 128
   publish          = true
   layers = [
-    aws_lambda_layer_version.lambda_layer.arn
+    "arn:aws:lambda:us-east-1:336392948345:layer:AWSSDKPandas-Python39-Arm64:4"
     ]
 
   lifecycle {
@@ -221,12 +221,6 @@ resource "aws_lambda_permission" "api_gateway_lambda_permission" {
   source_arn    = "${aws_apigatewayv2_api.api_gateway.execution_arn}/*/*"
 }
 
-resource "aws_lambda_layer_version" "lambda_layer" {
-  filename   = "${var.lambda_layer_name}.zip"
-  layer_name = "${var.lambda_layer_name}"
-
-  compatible_runtimes = ["python3.9"]
-}
 
 
 output "api_gateway_invoke_url" {
