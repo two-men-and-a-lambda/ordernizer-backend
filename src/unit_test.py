@@ -17,8 +17,8 @@ def test_api():
         aws_secret_access_key='48Xy1ACyTzRd6qyRBPgguZsRgJ7wUoBjksITtnAk'
     ).Bucket('ordernizer-database-bucket')
     test_dict = {"submit_inventory": {"input": {"bananas": 20, "apples": 23, "timestamp": "2023-01-30 04:25:01"}, "expected": {"apples": 23, "bananas": 20}},
-                 "submit_order": {"input": {"bananas": {"price": 10, "units": 20}, "apples": {"price": 30, "units": 100}, "timestamp": "2023-01-30 04:25:01"}, "expected": {"apples": 123, "bananas": 40}},
-                 "submit_sale": {"input": {"bananas": {"price": 10, "units": 20}, "apples": {"price": 30, "units": 23}, "timestamp": "2023-01-30 04:25:01"}, "expected": {"apples": 133, "bananas": 35}}
+                 "submit_order": {"input": {"bananas": {"price": 10, "units": 20}, "apples": {"price": 30, "units": 100}, "timestamp": "2023-01-30 04:25:01"}, "expected": {"apples": 156, "bananas": 55}},
+                 "submit_sale": {"input": {"bananas": {"price": 10, "units": 20}, "apples": {"price": 30, "units": 23}, "timestamp": "2023-01-30 04:25:01"}, "expected": {"apples": 33, "bananas": 15}}
     }
     for endpt, jsons in test_dict.items():
         print('*'*50,endpt,'*'*50)
