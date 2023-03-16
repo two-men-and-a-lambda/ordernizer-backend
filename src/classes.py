@@ -1,10 +1,14 @@
 import pandas as pd
 import numpy as np
+import boto3
 
 
 class Custom_df:
     def __init__(self, csv, copy=False):
-        self.df = pd.read_csv(csv).sort_values(by=['id'])
+        s3 = boto3.client('s3')
+        response = s3.get_object(Bucket='ordernizer-database-bucket', Key=csv)
+        #self.df = pd.read_csv(csv).sort_values(by=['id'])
+        self.df = pd.read_csv(response['Body'], sep=',').sort_values(by=['id'])
         if copy: self.batches_init(self.df)
         self.row = self.temp_copy = self.temp_two = None
 
@@ -42,5 +46,6 @@ class Custom_df:
         final_df = self.final_df.rename(columns={'units': 'units_remaining'})
         self.final_df = final_df[['wholesaleId', 'batch_profit', 'order_gross', 'product', 'cost_per_unit',
                                   'gross_per_unit', 'profit_per_unit', 'units_sold', 'units_remaining', 'timestamp']]
-        self.final_df.to_csv('result.csv', index=False)
+        # self.final_df.to_csv('result.csv', index=False)
+        print(self.final_df)
         return self.final_df

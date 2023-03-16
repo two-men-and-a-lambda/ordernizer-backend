@@ -1,4 +1,6 @@
 import pandas as pd
+from io import StringIO
+import boto3
 from main import generate_result
 
 '''
@@ -7,7 +9,9 @@ from main import generate_result
     - then finds based on this dataframe what is currently in stock for each product
 '''
 def get_totals(retail='retail.csv', wholesale='wholesale.csv'):
+    print('before gen result')
     df = generate_result(retail, wholesale)
+    print('after gen result')
     sold_out_df = df[df['units_remaining'] == 0]
     sold_out = list(set(sold_out_df['wholesaleId']))
     in_stock = df[~df['wholesaleId'].isin(sold_out) ]
@@ -48,10 +52,21 @@ def submit_inventory(new_totals, retail='retail.csv', wholesale='wholesale.csv')
     totals = get_totals(retail, wholesale)
     timestamp = new_totals.pop('timestamp')
     diffs = {product: {'price': 0, 'units': totals[product] - units} for product, units in new_totals.items()} 
-    sales = pd.read_csv(retail)
+    s3 = boto3.client('s3')
+    response = s3.get_object(Bucket='ordernizer-database-bucket', Key=retail)
+    #sales = pd.read_csv(retail).sort_values(by=['id'])
+    sales = pd.read_csv(response['Body'], sep=',').sort_values(by=['id'])
     transactions = generate_transactions(diffs, sales, timestamp)
     sales = append_rows_to_df(transactions, sales)
-    return sales
+    print('*'*100)
+    print(sales)
+    bucket = 'ordernizer-database-bucket' # already created on S3
+    csv_buffer = StringIO()
+    sales.to_csv(csv_buffer)
+    s3_resource = boto3.resource('s3')
+    s3_resource.Object(bucket, 'test/retail.csv').put(Body=csv_buffer.getvalue())
+    test_totals = get_totals('test/retail.csv', wholesale)
+    return test_totals
 
 
 '''
@@ -59,7 +74,10 @@ def submit_inventory(new_totals, retail='retail.csv', wholesale='wholesale.csv')
     - adds the order to wholesale.csv
 '''
 def submit_order(order, wholesale='wholesale.csv'):
-    batches = pd.read_csv(wholesale)
+    s3 = boto3.client('s3')
+    response = s3.get_object(Bucket='ordernizer-database-bucket', Key=wholesale)
+    #sales = pd.read_csv(retail).sort_values(by=['id'])
+    batches = pd.read_csv(response['Body'], sep=',').sort_values(by=['id'])
     timestamp = order.pop('timestamp')
     transactions = generate_transactions(order, batches, timestamp)
     batches = append_rows_to_df(transactions, batches)
@@ -72,7 +90,10 @@ def submit_order(order, wholesale='wholesale.csv'):
 '''
 def submit_sale(sale, retail='retail.csv'):
     totals = get_totals()
-    sales = pd.read_csv(retail)
+    s3 = boto3.client('s3')
+    response = s3.get_object(Bucket='ordernizer-database-bucket', Key=retail)
+    #sales = pd.read_csv(retail).sort_values(by=['id'])
+    sales = pd.read_csv(response['Body'], sep=',').sort_values(by=['id'])
     timestamp = sale.pop('timestamp')
     transactions = generate_transactions(sale, sales, timestamp, totals)
     sales = append_rows_to_df(transactions, sales)
