@@ -3,6 +3,20 @@ from io import StringIO
 import boto3
 from main import generate_result
 
+def get_table_data(folder='input'):
+    df = generate_result(folder)
+    sold_out = list(set(df[df['units_remaining'] == 0]['wholesaleId']))
+    in_stock = df[~df['wholesaleId'].isin(sold_out) ]
+    totals = in_stock[['wholesaleId', 'product', 'units_remaining']].groupby('wholesaleId').agg({'wholesaleId': 'max', 'product': 'max', 'units_remaining': 'min'})
+    resultArray = totals.to_dict('records')
+
+    #-------------Temporary Hard Code-----------
+    for row in resultArray:
+        row['pending'] = 0
+    #------------------------------------------
+    
+    return {'totals':resultArray}
+
 def get_totals(folder='input'):
     df = generate_result(folder)
     sold_out = list(set(df[df['units_remaining'] == 0]['wholesaleId']))
@@ -55,3 +69,5 @@ def submit_inventory(new_totals):
 def submit_sale(sale):
     totals = get_totals()
     return submit_order(sale, 'retail', totals)
+
+get_totals()
