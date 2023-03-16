@@ -42,7 +42,7 @@ def submit_order(sale, file='wholesale', totals=None):
     # simply copying the input file into the output location
     other_file = 'retail' if file == 'wholesale' else 'wholesale'
     secondary = get_file(f"input/{other_file}.csv")
-    output = put_file(secondary, f'output/{other_file}.csv')
+    put_file(secondary, f'output/{other_file}.csv')
     return get_totals('output')
 
 def submit_inventory(new_totals):
