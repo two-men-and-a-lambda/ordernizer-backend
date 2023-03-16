@@ -8,8 +8,9 @@ def get_totals(folder='input'):
     sold_out = list(set(df[df['units_remaining'] == 0]['wholesaleId']))
     in_stock = df[~df['wholesaleId'].isin(sold_out) ]
     totals = in_stock[['wholesaleId', 'product', 'units_remaining']].groupby('wholesaleId').agg({'product': 'max', 'units_remaining': 'min'})
-    totals_per_product = totals[['product', 'units_remaining']].groupby('product').sum()
-    return totals_per_product.to_dict()['units_remaining']
+    
+    result = totals.to_dict('records')
+    return {'totals':result}
 
 def generate_transactions(order, df, totals):
     transactions = []
