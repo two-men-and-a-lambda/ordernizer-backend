@@ -36,6 +36,7 @@ def put_file(df, file):
 def submit_order(sale, file='wholesale', totals=None):
     input = get_file(f'input/{file}.csv')
     transactions = generate_transactions(sale, input, totals)
+    print(transactions, input)
     output = append_rows_to_df(transactions, input)
     put_file(output, f'output/{file}.csv')
     return get_totals('output')
