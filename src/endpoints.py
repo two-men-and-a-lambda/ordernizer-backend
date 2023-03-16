@@ -13,7 +13,7 @@ def get_totals(folder='input'):
 
 def generate_transactions(order, df, totals):
     transactions = []
-    timestamp = df.pop('timestamp')
+    timestamp = order.pop('timestamp')
     for product, value in order.items():
         if totals and totals[product] < value['units']: raise Exception(f'Error! Not enough {product} in stock')
         transactions.append([df['id'].max()+1+len(transactions), product, value['price'], value['units'], timestamp])
@@ -36,7 +36,9 @@ def put_file(df, file):
 def submit_order(sale, file='wholesale', totals=None):
     input = get_file(f'input/{file}.csv')
     transactions = generate_transactions(sale, input, totals)
-    print(transactions, input)
+    print(transactions)
+    print('*'*100)
+    print(input)
     output = append_rows_to_df(transactions, input)
     put_file(output, f'output/{file}.csv')
     return get_totals('output')
