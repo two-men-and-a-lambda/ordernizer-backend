@@ -40,8 +40,9 @@ def submit_order(sale, file='wholesale', totals=None):
     put_file(output, f'output/{file}.csv')
     # following two lines are just to assure for the unit test that the opposite file is being written to, otherwise calculations will be off
     # simply copying the input file into the output location
-    secondary = get_file(f"input/{'retail' if file == 'wholesale' else 'wholesale'}.csv")
-    output = put_file(secondary, f'output/{secondary}.csv')
+    other_file = 'retail' if file == 'wholesale' else 'wholesale'
+    secondary = get_file(f"input/{other_file}.csv")
+    output = put_file(secondary, f'output/{other_file}.csv')
     return get_totals('output')
 
 def submit_inventory(new_totals):
