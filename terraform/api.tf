@@ -74,8 +74,9 @@ resource "aws_lambda_function" "api_lambda" {
   architectures    = ["arm64"]
   runtime          = "${var.runTime}"
   handler          = "${var.sourceFile}.${var.handler}"
-  memory_size      = 128
+  memory_size      = 512
   publish          = true
+  timeout = 20
   layers = [
     "arn:aws:lambda:us-east-1:336392948345:layer:AWSSDKPandas-Python39-Arm64:4"
     ]
