@@ -1,4 +1,7 @@
-import pandas
+import pandas as pd
+import requests
+import json
+import boto3
 from endpoints import *
 
 def test():
@@ -23,4 +26,46 @@ def test():
         print(key, ' '*(16-len(key)), 'PASS' if value else 'FAIL')
         
 
-test()
+#test()
+
+def test_api():
+    s3 = boto3.resource(
+        service_name='s3',
+        region_name='us-east-1',
+        aws_access_key_id='AKIA47ACC4ZGCT6JS5HC',
+        aws_secret_access_key='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'
+    )
+    bucket = s3.Bucket('ordernizer-database-bucket')
+    test_dict = {"submit_inventory": {"input": {"bananas": 20, "apples": 23, "timestamp": "2023-01-30 04:25:01"}, "output": {"apples": 23, "bananas": 20}}}
+    #              "submit_order": {"bananas": {"price": 10, "units": 20}, "apples": {"price": 30, "units": 100}, "timestamp": "2023-01-30 04:25:01"},
+    #              "submit_sale": {"bananas": {"price": 10, "units": 20}, "apples": {"price": 30, "units": 23}, "timestamp": "2023-01-30 04:25:01"}
+    # }
+    result = {}
+    for endpt, req_body in test_dict.items():
+        print('*'*50,endpt,'*'*50)
+        temp = []
+        raw_resp = requests.post('https://f0nk1usvg2.execute-api.us-east-1.amazonaws.com/'+endpt, json=req_body['input'])
+        resp = raw_resp.json()
+        req_body['expected'] = resp
+        x = int(resp == req_body['output'])
+        temp.append(x)
+        print('*'*25,'TOTALS', '*'*25)
+        print('PASS' if x else 'FAILURE')
+        for i in ['input', 'output', 'expected']:
+            print(f'{i.upper()}\n', req_body[i])
+        for file in ['wholesale.csv', 'retail.csv']:
+            dfs = {}
+            inp_obj = bucket.Object(f'{file}').get()
+            dfs['input'] = pd.read_csv(inp_obj['Body'], index_col=0)
+            out_obj = bucket.Object(f'test/{file}').get()
+            dfs['output'] = pd.read_csv(out_obj['Body'], index_col=0)
+            exp_obj = bucket.Object(f'test/{endpt}/{file}').get()
+            dfs['expected'] = pd.read_csv(exp_obj['Body'], index_col=0)
+            x = int(dfs['output'].equals(dfs['expected']))
+
+            temp.append(x)
+            print('*'*25,file,'*'*25)
+            print('PASS' if x else 'FAILURE')
+            for i, df in dfs.items():
+                print(f'{i.upper()}\n', df)
+test_api()
