@@ -55,9 +55,9 @@ def test_api():
             print(f'{i.upper()}\n', req_body[i])
         for file in ['wholesale.csv', 'retail.csv']:
             dfs = {}
-            inp_obj = bucket.Object(f'{file}').get()
+            inp_obj = bucket.Object(f'input/{file}').get()
             dfs['input'] = pd.read_csv(inp_obj['Body'], index_col=0)
-            out_obj = bucket.Object(f'test/{file}').get()
+            out_obj = bucket.Object(f'output/{file}').get()
             dfs['output'] = pd.read_csv(out_obj['Body'], index_col=0)
             exp_obj = bucket.Object(f'test/{endpt}/{file}').get()
             dfs['expected'] = pd.read_csv(exp_obj['Body'], index_col=0)

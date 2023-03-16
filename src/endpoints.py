@@ -8,9 +8,9 @@ from main import generate_result
     - uses generate_result() to combine wholesale and retail transactions into one comprehensive dataframe
     - then finds based on this dataframe what is currently in stock for each product
 '''
-def get_totals(retail='retail.csv', wholesale='wholesale.csv'):
+def get_totals(folder='input'):
     print('before gen result')
-    df = generate_result(retail, wholesale)
+    df = generate_result(folder)
     print('after gen result')
     sold_out_df = df[df['units_remaining'] == 0]
     sold_out = list(set(sold_out_df['wholesaleId']))
@@ -48,25 +48,29 @@ def append_rows_to_df(transactions, df):
         - the store manager takes inventory and finds that they have 3 apples
         - submit_inventory({'apples': 3}) will record a sale of 5 apples for $0 and mark it as such in retail.csv
 '''
-def submit_inventory(new_totals, retail='retail.csv', wholesale='wholesale.csv'):
-    totals = get_totals(retail, wholesale)
-    timestamp = new_totals.pop('timestamp')
-    diffs = {product: {'price': 0, 'units': totals[product] - units} for product, units in new_totals.items()} 
+def get_file(file):
     s3 = boto3.client('s3')
-    response = s3.get_object(Bucket='ordernizer-database-bucket', Key=retail)
-    #sales = pd.read_csv(retail).sort_values(by=['id'])
-    sales = pd.read_csv(response['Body'], sep=',').sort_values(by=['id'])
-    transactions = generate_transactions(diffs, sales, timestamp)
-    sales = append_rows_to_df(transactions, sales)
-    print('*'*100)
-    print(sales)
+    response = s3.get_object(Bucket='ordernizer-database-bucket', Key=file)
+    df = pd.read_csv(response['Body'], sep=',').sort_values(by=['id'])
+    return df
+
+def put_file(df, file):
     bucket = 'ordernizer-database-bucket' # already created on S3
     csv_buffer = StringIO()
-    sales.to_csv(csv_buffer)
+    df.to_csv(csv_buffer)
     s3_resource = boto3.resource('s3')
-    s3_resource.Object(bucket, 'test/retail.csv').put(Body=csv_buffer.getvalue())
-    test_totals = get_totals('test/retail.csv', wholesale)
-    return test_totals
+    s3_resource.Object(bucket, file).put(Body=csv_buffer.getvalue())
+
+def submit_inventory(new_totals):
+    totals = get_totals('input')
+    timestamp = new_totals.pop('timestamp')
+    diffs = {product: {'price': 0, 'units': totals[product] - units} for product, units in new_totals.items()} 
+    sales = get_file('input/retail.csv')
+    transactions = generate_transactions(diffs, sales, timestamp)
+    sales = append_rows_to_df(transactions, sales)
+    put_file(sales, 'output/retail.csv')
+    result_totals = get_totals('output')
+    return result_totals
 
 
 '''
