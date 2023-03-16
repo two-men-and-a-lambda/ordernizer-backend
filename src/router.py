@@ -6,7 +6,7 @@ def lambda_handler(event, context):
     print(context)
     path = event['path'][1:]
     body = json.loads(event['body'])
-    print(path)
+    statusCode = 200
     if path == 'get_totals':
         result = get_totals()
     elif path == 'submit_inventory':
@@ -16,12 +16,10 @@ def lambda_handler(event, context):
     elif path == 'submit_sale':
         result = submit_sale(body)
     else:
-        return {  #         <---- RETURN THIS RIGHT AWAY 
-        'statusCode': 503,
-        'body': json.dumps(f'{path} is not a valid endpoint')
-    }
+        statusCode = 503
+        result = f'{path} is not a valid endpoint'
 
-    return {  #         <---- RETURN THIS RIGHT AWAY 
-        'statusCode': 200,
+    return { 
+        'statusCode': statusCode,
         'body': json.dumps(result)
     }
