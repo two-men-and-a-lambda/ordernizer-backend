@@ -46,6 +46,7 @@ def submit_order(sale, file='wholesale', totals=None):
 def submit_inventory(new_totals):
     totals = get_totals()
     diffs = {product: {'price': 0, 'units': totals[product] - units} for product, units in new_totals.items() if product != 'timestamp'}
+    diffs['timestamp'] = new_totals['timestamp']
     return submit_order(diffs, 'retail', totals)
 
 def submit_sale(sale):
