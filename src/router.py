@@ -9,6 +9,8 @@ def lambda_handler(event, context):
     statusCode = 200
     if path == 'get_totals':
         result = get_totals()
+    elif path == 'table':
+        result = get_table_data()
     elif path == 'submit_inventory':
         result = submit_inventory(body)
     elif path == 'submit_order':
