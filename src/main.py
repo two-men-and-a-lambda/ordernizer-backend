@@ -40,9 +40,9 @@ def log_transaction(batches, sales):
     - iterate through each sale and deduct from the corresponding wholesale purchases until there are no more sales
     - combine the wholesale and retail into one comprehensive csv, result.csv
 '''
-def generate_result(retail='retail.csv', wholesale='wholesale.csv'):
-    sales = Custom_df(retail)
-    batches = Custom_df(wholesale, True)
+def generate_result(folder='input'):
+    sales = Custom_df(f'{folder}/retail')
+    batches = Custom_df(f'{folder}/wholesale', True)
     while not sales.df.empty:
         sales.pop_row()
         batches.pop_row(sales.row['product'])
