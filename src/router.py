@@ -5,7 +5,10 @@ def lambda_handler(event, context):
     print(event)
     print(context)
     path = event['path'][1:]
-    body = json.loads(event['body'])
+    try:
+        body = json.loads(event['body'])
+    except:
+        pass
     statusCode = 200
     if path == 'get_totals':
         result = get_totals()
