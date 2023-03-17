@@ -158,6 +158,12 @@ resource "aws_iam_role" "api_lambda_role" {
 resource "aws_apigatewayv2_api" "api_gateway" {
   name          = "${var.name_prefix}-api-gateway"
   protocol_type = "HTTP"
+  cors_configuration {
+    allow_origins = ["http://localhost:4200", "https://www.ordernizer.org"]
+    allow_methods = ["POST", "GET", "OPTIONS"]
+    allow_headers = ["content-type"]
+    max_age = 300
+  }
   tags = merge({
     Name = "${var.name_prefix}-gateway"
   }, var.tags)
@@ -208,6 +214,46 @@ resource "aws_apigatewayv2_integration" "api_gateway_integration" {
 resource "aws_apigatewayv2_route" "api_gateway_any_route" {
   api_id               = aws_apigatewayv2_api.api_gateway.id
   route_key            = "ANY /{proxy+}"
+  target               = "integrations/${aws_apigatewayv2_integration.api_gateway_integration.id}"
+  authorization_scopes = []
+  request_models       = {}
+}
+
+resource "aws_apigatewayv2_route" "get_totals" {
+  api_id               = aws_apigatewayv2_api.api_gateway.id
+  route_key            = "GET /get_totals"
+  target               = "integrations/${aws_apigatewayv2_integration.api_gateway_integration.id}"
+  authorization_scopes = []
+  request_models       = {}
+}
+
+resource "aws_apigatewayv2_route" "table" {
+  api_id               = aws_apigatewayv2_api.api_gateway.id
+  route_key            = "GET /table"
+  target               = "integrations/${aws_apigatewayv2_integration.api_gateway_integration.id}"
+  authorization_scopes = []
+  request_models       = {}
+}
+
+resource "aws_apigatewayv2_route" "submit_inventory" {
+  api_id               = aws_apigatewayv2_api.api_gateway.id
+  route_key            = "POST /submit_inventory"
+  target               = "integrations/${aws_apigatewayv2_integration.api_gateway_integration.id}"
+  authorization_scopes = []
+  request_models       = {}
+}
+
+resource "aws_apigatewayv2_route" "submit_order" {
+  api_id               = aws_apigatewayv2_api.api_gateway.id
+  route_key            = "POST /submit_order"
+  target               = "integrations/${aws_apigatewayv2_integration.api_gateway_integration.id}"
+  authorization_scopes = []
+  request_models       = {}
+}
+
+resource "aws_apigatewayv2_route" "submit_sale" {
+  api_id               = aws_apigatewayv2_api.api_gateway.id
+  route_key            = "POST /submit_sale"
   target               = "integrations/${aws_apigatewayv2_integration.api_gateway_integration.id}"
   authorization_scopes = []
   request_models       = {}
