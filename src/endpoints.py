@@ -13,6 +13,8 @@ def get_table_data(folder='input'):
     #-------------Temporary Hard Code-----------
     for row in resultArray:
         row['pending'] = 0
+        row['shipment'] = 0
+        row['sale'] = 0
     #------------------------------------------
     
     return {'totals':resultArray}
