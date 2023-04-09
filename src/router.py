@@ -2,11 +2,16 @@ import json
 from endpoints import *
 
 def lambda_handler(event, context):
+    print('*'*100)
     print(event)
+    print('!'*100)
     print(context)
+    print('@'*100)
     path = event['path'][1:]
     try:
         body = json.loads(event['body'])
+        print(body)
+        print('&'*100)
     except:
         pass
     statusCode = 200
