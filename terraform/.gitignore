@@ -1,3 +1,4 @@
 .terraform/
 python/
 python_lambda_layer.zip
+.terraform.lock.hcl
