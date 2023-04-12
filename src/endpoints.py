@@ -49,7 +49,7 @@ def get_csv(file):
 
 def put_file(df, file):
     csv_buffer = StringIO()
-    df.to_csv(csv_buffer)
+    df.to_csv(csv_buffer, index=False)
     boto3.resource('s3').Object('ordernizer-database-bucket', file).put(Body=csv_buffer.getvalue())
 
 def submit_order(sale, file='wholesale', totals=None):
