@@ -10,11 +10,12 @@ def lambda_handler(event, context):
     if path == 'get_totals':
         result = get_totals()
     elif path == 'submit_inventory':
-        result = submit_inventory(body)
+        body = get_diffs(body)
+        result = submit_order(body, 'retail')
     elif path == 'submit_order':
-        result = submit_order(body)
+        result = submit_order(body, 'wholesale')
     elif path == 'submit_sale':
-        result = submit_sale(body)
+        result = submit_order(body, 'retail')
     else:
         statusCode = 503
         result = f'{path} is not a valid endpoint'

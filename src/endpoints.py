@@ -11,46 +11,35 @@ def get_totals(folder='input'):
     totals_per_product = totals[['product', 'units_remaining']].groupby('product').sum()
     return totals_per_product.to_dict()['units_remaining']
 
-def generate_transactions(order, df, totals):
-    transactions = []
+def append_transactions_to_df(order, df, totals):
     timestamp = order.pop('timestamp')
     for product, value in order.items():
         if totals and totals[product] < value['units']: raise Exception(f'Error! Not enough {product} in stock')
-        transactions.append([df['id'].max()+1+len(transactions), product, value['price'], value['units'], timestamp])
-    return transactions
-
-def append_rows_to_df(transactions, df):
-    for transaction in transactions:
-        df.loc[len(df)] = transaction
+        df.loc[len(df)] = [df['id'].max()+1, product, value['price'], value['units'], timestamp]
     return df
 
-def get_file(file):
+def read_csv_as_df(file):
     response = boto3.client('s3').get_object(Bucket='ordernizer-database-bucket', Key=file)
     return pd.read_csv(response['Body'], sep=',').sort_values(by=['id'])
 
-def put_file(df, file):
+def write_df_to_csv(df, file):
     csv_buffer = StringIO()
     df.to_csv(csv_buffer)
     boto3.resource('s3').Object('ordernizer-database-bucket', file).put(Body=csv_buffer.getvalue())
 
-def submit_order(sale, file='wholesale', totals=None):
-    input = get_file(f'input/{file}.csv')
-    transactions = generate_transactions(sale, input, totals)
-    output = append_rows_to_df(transactions, input)
-    put_file(output, f'output/{file}.csv')
-    # following two lines are just to assure for the unit test that the opposite file is being written to, otherwise calculations will be off
-    # simply copying the input file into the output location
-    other_file = 'retail' if file == 'wholesale' else 'wholesale'
-    secondary = get_file(f"input/{other_file}.csv")
-    put_file(secondary, f'output/{other_file}.csv')
+def move_file(file_name, sale=None):
+    input = read_csv_as_df(f"input/{file_name}.csv")
+    if sale: df = append_transactions_to_df(sale, input, None if file_name == 'wholesale' else get_totals())
+    write_df_to_csv(df, f'output/{file_name}.csv')
+
+def submit_order(sale, file_name):
+    other_file = 'retail' if file_name == 'wholesale' else 'wholesale'
+    move_file(file_name, sale)
+    move_file(other_file)
     return get_totals('output')
 
-def submit_inventory(new_totals):
+def get_diffs(new_totals):
     totals = get_totals()
     diffs = {product: {'price': 0, 'units': totals[product] - units} for product, units in new_totals.items() if product != 'timestamp'}
     diffs['timestamp'] = new_totals['timestamp']
-    return submit_order(diffs, 'retail', totals)
-
-def submit_sale(sale):
-    totals = get_totals()
-    return submit_order(sale, 'retail', totals)
+    return diffs
