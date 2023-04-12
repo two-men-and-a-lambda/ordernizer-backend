@@ -44,6 +44,9 @@ def get_file(file):
     response = boto3.client('s3').get_object(Bucket='ordernizer-database-bucket', Key=file)
     return pd.read_csv(response['Body'], sep=',').sort_values(by=['id'])
 
+def get_csv(file):
+    return get_file(file).to_dict('records')
+
 def put_file(df, file):
     csv_buffer = StringIO()
     df.to_csv(csv_buffer)
