@@ -15,6 +15,8 @@ def get_table_data(folder='input'):
         row['pending'] = 0
         row['shipment'] = 0
         row['sale'] = 0
+        row['secondary'] = 0
+        row['ship_secondary'] = 0
     #------------------------------------------
     
     return {'totals':resultArray}
