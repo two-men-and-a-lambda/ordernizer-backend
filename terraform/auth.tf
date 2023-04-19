@@ -12,7 +12,7 @@ module "aws_cognito_user_pool"{
   password_policy_require_lowercase                  = false
   password_policy_minimum_length                     = 6
   user_pool_add_ons_advanced_security_mode           = "OFF"
-  verification_message_template_default_email_option = "CONFIRM_WITH_CODE"
+  verification_message_template_default_email_option = "CONFIRM_WITH_LINK"
 
 
   # schemas
