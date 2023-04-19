@@ -15,6 +15,8 @@ def get_table_data(folder='input'):
         row['pending'] = 0
         row['shipment'] = 0
         row['sale'] = 0
+        row['secondary'] = 0
+        row['ship_secondary'] = 0
     #------------------------------------------
     
     return {'totals':resultArray}
@@ -49,7 +51,7 @@ def get_csv(file):
 
 def put_file(df, file):
     csv_buffer = StringIO()
-    df.to_csv(csv_buffer)
+    df.to_csv(csv_buffer, index=False)
     boto3.resource('s3').Object('ordernizer-database-bucket', file).put(Body=csv_buffer.getvalue())
 
 def submit_order(sale, file='wholesale', totals=None):
