@@ -37,14 +37,10 @@ def lambda_handler(event, context):
         result = submit_order(body, userID=user)
     elif path == 'submit_sale':
         result = submit_order(body, userID=user)
-    elif path == 'get_retail_output':
-        result = get_csv_as_json('output/retail.csv')
-    elif path == 'get_retail_input':
-        result = get_csv_as_json('input/retail.csv')
-    elif path == 'get_wholesale_output':
-        result = get_csv_as_json('output/wholesale.csv')
-    elif path == 'get_wholesale_input':
-        result = get_csv_as_json('input/wholesale.csv')
+    elif path == 'get_retail':
+        result = get_csv_as_json('{user}/retail.csv')
+    elif path == 'get_wholesale':
+        result = get_csv_as_json('{user}/wholesale.csv')
     else:
         statusCode = 503
         result = f'{path} is not a valid endpoint'
