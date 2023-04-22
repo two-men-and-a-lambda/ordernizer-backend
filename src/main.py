@@ -3,6 +3,15 @@ import pandas as pd
 import numpy as np
 from classes import Custom_df
 
+
+def generate_transactions(order, df, totals, transType):
+    transactions = []
+    timestamp = order.pop('timestamp')
+    for product, value in order.items():
+        if transType == 'sale' and totals and totals[product] < value['units']: raise Exception(f'Error! Not enough {product} in stock')
+        transactions.append([df['id'].max()+1+len(transactions), product, value['price'], value['units'], timestamp])
+    return transactions
+
 # taking relevant values from batch and sale and putting into one dictionary to represent the transaction
 def get_trans_dict(sale, batch, gt):
     transaction = {k: v for k, v in batch.items() if k in ['wholesaleId', 'product', 'cost_per_unit']}
@@ -40,9 +49,9 @@ def log_transaction(batches, sales):
     - iterate through each sale and deduct from the corresponding wholesale purchases until there are no more sales
     - combine the wholesale and retail into one comprehensive csv, result.csv
 '''
-def generate_result(folder='input'):
-    sales = Custom_df(folder, f'retail')
-    batches = Custom_df(folder, f'wholesale', True)
+def generate_result(userID='testUser0'):
+    sales = Custom_df(userID, f'retail')
+    batches = Custom_df(userID, f'wholesale', True)
     while not sales.df.empty:
         sales.pop_row()
         batches.pop_row(sales.row['product'])

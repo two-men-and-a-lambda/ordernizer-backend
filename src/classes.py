@@ -4,9 +4,9 @@ import boto3
 
 
 class Custom_df:
-    def __init__(self, user, csv, copy=False):
+    def __init__(self, userID, csv, copy=False):
         s3 = boto3.client('s3')
-        bucketPath = f'{user}/{csv}.csv'
+        bucketPath = f'{userID}/{csv}.csv'
         print(bucketPath)
         response = s3.get_object(Bucket='ordernizer-database-bucket', Key=bucketPath)
         #self.df = pd.read_csv(csv).sort_values(by=['id'])
