@@ -10,6 +10,8 @@ def lambda_handler(event, context):
     path = event['path'][1:]
     try:
         body = json.loads(event['body'])
+        user = json.loads(event["queryStringParameters"])
+        print(user)
         print(body)
         print('&'*100)
     except:
