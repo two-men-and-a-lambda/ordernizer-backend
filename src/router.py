@@ -11,7 +11,6 @@ def lambda_handler(event, context):
 
     try:
         user = event["queryStringParameters"]["user"]
-        print('user:' + user)
     except:
         statusCode = 503
         result = f'must include user in API request like /user?testUser0'
@@ -36,7 +35,7 @@ def lambda_handler(event, context):
     elif path == 'submit_order':
         result = submit_order(body, userID=user)
     elif path == 'submit_sale':
-        result = submit_order(body, userID=user)
+        result = submit_sale(body, userID=user)
     elif path == 'get_retail':
         result = get_csv_as_json('{user}/retail.csv')
     elif path == 'get_wholesale':
