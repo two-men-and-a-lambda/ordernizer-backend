@@ -88,6 +88,13 @@ resource "aws_lambda_function" "api_lambda" {
       version,
       environment
     ]
+
+  }
+
+  environment {
+    variables = {
+      ENV = "PROD"
+    }
   }
 
   tags = merge({

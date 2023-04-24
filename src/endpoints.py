@@ -1,8 +1,9 @@
 import pandas as pd
 from io import StringIO
 import boto3
-from main import generate_result, generate_transactions
+from main import generate_result, generate_transactions, generate_metrics_df
 import logging
+import constants
 
 def get_table_data(userID='testUser0'):
     
@@ -130,3 +131,6 @@ def submit_order(sale, userID='testUser0', totals=None):
         totals = get_totals(userID)
 
     return submit_transaction(sale, transType='order', userID=userID, totals=totals)
+
+def get_sales_chart_data(lookback=constants.ONE_WEEK,userID='testUser0',  lookbackUnit=constants.ONE_DAY):
+    generate_metrics_df(userID, lookback, lookbackUnit)

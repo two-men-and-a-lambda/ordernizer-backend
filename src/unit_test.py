@@ -5,6 +5,7 @@ import os
 from endpoints import *
 from classes import Custom_df
 import logging
+import datetime
 
 def print_stuff(x, file, the_dict):
     logging.info('*'*25,file,'*'*25)
@@ -50,6 +51,7 @@ def test_api():
 #a = Custom_df('testUser0', 'wholesale', True)
 
 logging.basicConfig(level=logging.INFO)
-a=get_table_data()
+#a=get_table_data()
+a=get_sales_chart_data()
 #a = get_table_data('testUser0')
 logging.info(a)

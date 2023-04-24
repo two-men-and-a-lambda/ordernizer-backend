@@ -1,7 +1,7 @@
 from datetime import datetime
 import pandas as pd
 import numpy as np
-from classes import Custom_df
+from classes import Custom_df, Metrics_DF
 
 
 def generate_transactions(order, df, totals, transType):
@@ -58,3 +58,7 @@ def generate_result(userID='testUser0'):
         batches, transaction, sales = log_transaction(batches, sales)
         batches.comp_trans(transaction)
     return batches.complete()
+
+def generate_metrics_df(userID, lookback, lookbackUnit):
+    metrics = Metrics_DF(userID, lookback, lookbackUnit)
+    metrics.aggregate_retail_data()
