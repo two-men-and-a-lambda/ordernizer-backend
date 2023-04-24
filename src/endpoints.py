@@ -2,24 +2,55 @@ import pandas as pd
 from io import StringIO
 import boto3
 from main import generate_result, generate_transactions
+import logging
 
 def get_table_data(userID='testUser0'):
+    
     df = generate_result(userID)
+    logging.info('agg: ')
+    logging.info(df)
+    logging.info('\n\n\n\n')
     sold_out = list(set(df[df['units_remaining'] == 0]['wholesaleId']))
     in_stock = df[~df['wholesaleId'].isin(sold_out) ]
-    totals = in_stock[['wholesaleId', 'product', 'units_remaining']].groupby('wholesaleId').agg({'wholesaleId': 'max', 'product': 'max', 'units_remaining': 'min'})
-    resultArray = totals.to_dict('records')
+    totals = in_stock[['wholesaleId', 'product', 'units_remaining', 'cost_per_unit', 'gross_per_unit']].groupby('wholesaleId').agg({'product': 'max', 'units_remaining': 'min', 'cost_per_unit':'max', 'gross_per_unit':'max'})
+    logging.info('totals: ')
+    logging.info(totals)
+    logging.info('\n\n\n\n')
+    totals_per_product = totals[['product', 'units_remaining']].groupby('product').sum()
+    logging.info('totalspp: ')
+    logging.info(totals_per_product)
+    logging.info('\n\n\n\n')
+    cost_per_product = totals[['product', 'cost_per_unit', 'gross_per_unit']].groupby('product').max()
+    cost_per_product = cost_per_product.to_dict('index')
+
+    logging.info('cpp: ')
+    logging.info(cost_per_product)
+    logging.info('\n\n\n\n')
+    result = totals_per_product.to_dict('index')
+    logging.info('result: ')
+    logging.info(result)
+    logging.info('\n\n\n\n')
+
+
+    resultArray = []
 
     #-------------Temporary Hard Code-----------
-    for row in resultArray:
-        row['pending'] = 0
-        row['shipment'] = 0
-        row['sale'] = 0
-        row['secondary'] = 0
-        row['ship_secondary'] = 0
+    for product in result:
+        result[product]['shipmentPrice'] = cost_per_product[product]['cost_per_unit']
+        result[product]['salePrice'] = cost_per_product[product]['gross_per_unit']
+        result[product]['pending'] = 0
+        result[product]['shipment'] = 0
+        result[product]['sale'] = 0
+        result[product]['secondary'] = 0
+        result[product]['ship_secondary'] = 0
+        result[product]['product'] = product
+
+
+        resultArray.append(result[product])
     #------------------------------------------
     
     return {'totals':resultArray}
+
 
 def get_totals(userID='testUser0'):
     df = generate_result(userID)

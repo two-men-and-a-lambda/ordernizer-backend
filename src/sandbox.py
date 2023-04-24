@@ -1,6 +1,7 @@
 from datetime import datetime
 import pandas as pd
 import numpy as np
+import logging
 
 
 def pop_row(df):
@@ -22,12 +23,12 @@ def pop_row_two(df):
 t = pd.read_csv('wholesale.csv').sort_values(by=['id'])
 
 df, row = pop_row(t)
-print(df)
-print(row)
+logging.info(df)
+logging.info(row)
 df, row = pop_row_two(t)
-print('*'*100)
-print(df)
-print(row)
+logging.info('*'*100)
+logging.info(df)
+logging.info(row)
 
 # the_json = {
 #     'filter': 'product',
@@ -54,17 +55,17 @@ print(row)
 # if item in the_json.keys():
 #     df = t[t[filter] == item]
 # df = df.dropna(subset=[search])
-# print(df)
+# logging.info(df)
 # if metric in ['min', 'max']:
 #     if metric == 'max':
 #         result = df[df[search] == df[search].max()]
 #     elif metric == 'min':
 #         result = df[df[search] == df[search].min()]
-#     print('\n', result)
-#     print(
+#     logging.info('\n', result)
+#     logging.info(
 #         f"\nThe {metric} {search} on a sale of {item} was transaction {result.index.values[0]} with a {search} of {result[search].values[0]}.  {result['units_sold'].values[0]} unit(s) were sold at ${result['gross_per_unit'].values[0]} after being purchased wholesale for ${result['cost_per_unit'].values[0]} as part of batch {result['wholesaleId'].values[0]}")
 # elif metric == 'avg':
-#     print(
+#     logging.info(
 #         f"\nThe {metric} {search} on a sale of {item} was {df[search].mean()} with an average wholesale cost of {df['cost_per_unit'].mean()} and average sale price of {df['gross_per_unit'].mean()}")
 
 
@@ -92,14 +93,14 @@ def pop_row_test(df):
 
 
 dataframe = pd.read_csv('test.csv')
-print('\n'*5, dataframe)
-print('*'*100)
+logging.info('\n'*5, dataframe)
+logging.info('*'*100)
 dataframe = dataframe.rename(columns={'product': 'PRODUCT'})
-print(dataframe)
+logging.info(dataframe)
 dataframe.to_csv('evan_a.csv')
 dataframe['price'] = dataframe['price'] * 5 / 42
-print('*'*100)
-print(dataframe)
+logging.info('*'*100)
+logging.info(dataframe)
 dataframe.to_csv('evan_b.csv')
 
 
@@ -191,17 +192,17 @@ def main():
 
         # transactions = pd.concat([wholesale, transactions])
         # transactions = transactions.sort_values(by=['timestamp'])
-        # print(transactions)
+        # logging.info(transactions)
         # wholesale, trans, sales = log_transaction(
         #     batch, sale, wholesale, sales)
         # transactions = pd.concat(
         #     [transactions, wholesale], join='inner')
-        # print(transactions)
+        # logging.info(transactions)
         transactions = transactions.append(trans, ignore_index=True)
     transactions = transactions.rename(columns={'units': 'units_remaining'})
     transactions = transactions[['wholesaleId', 'batch_profit', 'order_gross', 'product', 'cost_per_unit', 'gross_per_unit', 'profit_per_unit', 'units_sold',
                                  'units_remaining', 'timestamp']]
-    print('\n', transactions)
+    logging.info('\n', transactions)
 
 
 main()
@@ -299,7 +300,7 @@ def main():
     transactions = transactions.rename(columns={'units': 'units_remaining'})
     transactions = transactions[['wholesaleId', 'batch_profit', 'order_gross', 'product', 'cost_per_unit', 'gross_per_unit', 'profit_per_unit', 'units_sold',
                                  'units_remaining', 'timestamp']]
-    print('\n', transactions)
+    logging.info('\n', transactions)
 
 
 main()

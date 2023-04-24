@@ -1,16 +1,26 @@
 import pandas as pd
 import numpy as np
 import boto3
+import os
+import logging
 
 
 class Custom_df:
     def __init__(self, userID, csv, copy=False):
-        s3 = boto3.client('s3')
-        bucketPath = f'{userID}/{csv}.csv'
-        print(bucketPath)
-        response = s3.get_object(Bucket='ordernizer-database-bucket', Key=bucketPath)
+        env = os.getenv('ENV')
+        logging.info('env: ' + env)
+        if env=='local':
+            filePath = f'./db/{userID}/{csv}.csv'
+            self.df = pd.read_csv(filePath, sep=',').sort_values(by=['id'])
+
+        else:
+            s3 = boto3.client('s3')
+            bucketPath = f'{userID}/{csv}.csv'
+            logging.info(bucketPath)
+            response = s3.get_object(Bucket='ordernizer-database-bucket', Key=bucketPath)
+            self.df = pd.read_csv(response['Body'], sep=',').sort_values(by=['id'])
+            
         #self.df = pd.read_csv(csv).sort_values(by=['id'])
-        self.df = pd.read_csv(response['Body'], sep=',').sort_values(by=['id'])
         if copy: self.batches_init(self.df)
         self.row = self.temp_copy = self.temp_two = None
 
@@ -49,5 +59,8 @@ class Custom_df:
         self.final_df = final_df[['wholesaleId', 'batch_profit', 'order_gross', 'product', 'cost_per_unit',
                                   'gross_per_unit', 'profit_per_unit', 'units_sold', 'units_remaining', 'timestamp']]
         # self.final_df.to_csv('result.csv', index=False)
-        print(self.final_df)
+        logging.info(self.final_df)
         return self.final_df
+    
+    def __str__(self):
+        return str(self.df)

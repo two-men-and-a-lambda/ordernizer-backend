@@ -2,17 +2,19 @@ import json
 from endpoints import *
 
 def lambda_handler(event, context):
-    print('*'*100)
-    print(event)
-    print('!'*100)
-    print(context)
-    print('@'*100)
+    logging.info('*'*100)
+    logging.info(event)
+    logging.info('!'*100)
+    logging.info(context)
+    logging.info('@'*100)
     path = event['path'][1:]
 
     try:
         user = event["queryStringParameters"]["user"]
     except:
         statusCode = 503
+        logging.error('must include user in API request like /user?testUser0')
+
         result = f'must include user in API request like /user?testUser0'
         return { 
         'statusCode': statusCode,
@@ -21,8 +23,8 @@ def lambda_handler(event, context):
 
     try:
         body = json.loads(event['body'])
-        print(body)
-        print('&'*100)
+        logging.info(body)
+        logging.info('&'*100)
     except:
         pass
     statusCode = 200
@@ -42,9 +44,10 @@ def lambda_handler(event, context):
         result = get_csv_as_json('{user}/wholesale.csv')
     else:
         statusCode = 503
+        logging.error('{path} is not a valid endpoint')
         result = f'{path} is not a valid endpoint'
-    print('RESULT:')
-    print(result)
+    logging.info('RESULT:')
+    logging.info(result)
     return { 
         'statusCode': statusCode,
         'body': json.dumps(result)
