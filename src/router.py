@@ -2,6 +2,8 @@ import json
 from endpoints import *
 
 def lambda_handler(event, context):
+    #TODO set log level here from environment variable
+    
     logging.info('*'*100)
     logging.info(event)
     logging.info('!'*100)
@@ -32,6 +34,8 @@ def lambda_handler(event, context):
         result = get_totals(userID=user)
     elif path == 'table':
         result = get_table_data(userID=user)
+    elif path == 'chart':
+        result = get_sales_chart_data(body, userID=user)
     elif path == 'submit_inventory':
         result = submit_inventory(body, userID=user)
     elif path == 'submit_order':

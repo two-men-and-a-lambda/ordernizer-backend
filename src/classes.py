@@ -99,15 +99,17 @@ class Metrics_DF:
             self.df = pd.read_csv(response['Body'], sep=',').sort_values(by=['id'])
 
         self.df['timestamp'] = pd.to_datetime(self.df['timestamp'], utc=True)
-        print(self.df)
-        print(self.df.iloc[0]['timestamp'])
+        logging.info(self.df)
+        logging.info(self.df.iloc[0]['timestamp'])
 
         utc = pytz.UTC
 
         self.reportEndDate = utc.localize(datetime.today())
-        print(self.reportEndDate)
+        logging.info(self.reportEndDate)
         self.reportEndDate = self.reportEndDate.replace(hour=0, minute=0, second=0, microsecond=0)
-        print(self.reportEndDate)
+        logging.info(self.reportEndDate)
+
+        self.periodUnit = periodUnit
 
 
         self.lookback = lookback
@@ -142,29 +144,111 @@ class Metrics_DF:
             plot_points.append(rollingDate)
             rollingDate -= self.periodDelta
 
+        plot_points.reverse()
         return plot_points
 
     def aggregate_retail_data(self):
+
+        #TODO maybe move this aggregation logic to javascript. 
+        # Just send all sales data and sort is based on user input fields for reporting periods
         plotPoints = self.get_plot_points()
-        result = {'totals':{}}
+
+        productList = self.df["product"].values.tolist()
+        productList = [*set(productList)]
+
+        logging.info('productList:')
+        logging.info(productList)
+        
+        salesTotals = {}
+        revenueTotals = {}
+
+        for product in productList:
+            #initialize product data
+            salesTotals[product] = {'series':[], 'name':product, 'sum': 0}
+            revenueTotals[product] = {'series':[], 'name':product, 'sum': 0}
+        #{
+        # apples': 
+        #   {series:[{value: 5, name: Monday},...], total: 585},
+        # bananas':
+        #   {series:[...], total: 226},
+        #}
+        
+
         for periodStartDate in plotPoints:
             periodEndDate = periodStartDate + self.periodDelta
-            print(periodStartDate.strftime("%m/%d/%Y") + ' to ' + periodEndDate.strftime("%m/%d/%Y") + '\n')
+            logging.info(periodStartDate.strftime("%m/%d/%Y") + ' to ' + periodEndDate.strftime("%m/%d/%Y") + '\n')
 
             salesFrame = self.df[(self.df['timestamp'] > periodStartDate) & (self.df['timestamp'] <= periodEndDate)]
-            print(salesFrame)
-            print('\n\n')
+            logging.info(salesFrame)
+            logging.info('\n\n')
             
             totalSalesFrame = salesFrame[['product', 'price', 'units']].groupby('product').agg({'product': 'max', 'units': 'sum', 'price':'sum'})
             totalSalesDict = totalSalesFrame.to_dict('index')
-            print(totalSalesDict)
 
-            averageSalesFrame = salesFrame[['product', 'price', 'units']].groupby('product').agg({'product': 'max', 'units': 'mean', 'price':'mean'})
-            averageSalesDict = averageSalesFrame.to_dict('index')
-            print(averageSalesDict)
+            # add a blank data point that will get updated if there is real data for this period
+            salesDataPoints = {}
+            revenueDataPoints = {}
 
+            for product in productList:
+                salesDataPoints[product] = {'value':0, 'name':self.getXColumnLabel(periodStartDate)}
+                revenueDataPoints[product] = {'value':0, 'name':self.getXColumnLabel(periodStartDate)}
+            
+
+            for product in totalSalesDict:
+                units = totalSalesDict[product]['units']
+                salesTotals[product]['sum'] += units
+                salesDataPoints[product] = {'value':units, 'name':self.getXColumnLabel(periodStartDate)}
+
+            #TODO more metrics
+            #averageSalesFrame = salesFrame[['product', 'price', 'units']].groupby('product').agg({'product': 'max', 'units': 'mean', 'price':'mean'})
+            #averageSalesDict = averageSalesFrame.to_dict('index')
 
             
+            for product in totalSalesDict:
+                price = totalSalesDict[product]['price']
+                revenueTotals[product]['sum'] += price
+                revenueDataPoints[product] = {'value':price, 'name':self.getXColumnLabel(periodStartDate)}
+    
+            for product in productList:
+                salesTotals[product]['series'].append(salesDataPoints[product])
+                revenueTotals[product]['series'].append(revenueDataPoints[product])
+            
+        salesTotalsJson = {}
+        revenueTotalsJson = {}
+
+        salesDataJson = []
+        revenueDataJson = []
+
+        for product in productList:
+            totalSales = salesTotals[product].pop('sum')
+            totalRevenue = revenueTotals[product].pop('sum')
+
+            salesTotalsJson[product] = totalSales
+            revenueTotalsJson[product] = totalRevenue
+
+            salesDataJson.append(salesTotals[product])
+            revenueDataJson.append(revenueTotals[product])
+
+        resultDict = {
+            'salesData': salesDataJson,
+            'revenueData': revenueDataJson,
+            'salesTotals': salesTotalsJson,
+            'revenueTotals': revenueTotalsJson,
+            'lookbackDate': self.lookbackDate.strftime('%m/%d/%Y'),
+            'currentDate': self.reportEndDate.strftime('%m/%d/%Y'),
+            'periodUnit': self.periodUnit
+        }
+        logging.info('\n\nFinal Chart data Result Json:')
+        logging.info(resultDict)
+
+        return resultDict
+
+
+    def getXColumnLabel(self, periodStartDate: datetime):
+        #TODO some logic "if units are months (march, april, may)"
+        # if units are days "monday tuesday wednesday"
+        # if units are weeks 7/4-7/11, 7/12-7/19, 7/20-7/27
+        return periodStartDate.strftime('%a %m/%d')
 
     def timestampToDate(self, stamp):
         return datetime.strptime(stamp, '%Y-%m-%d %H:%M:%S')

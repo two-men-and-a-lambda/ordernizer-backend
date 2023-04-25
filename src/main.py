@@ -2,6 +2,7 @@ from datetime import datetime
 import pandas as pd
 import numpy as np
 from classes import Custom_df, Metrics_DF
+import constants
 
 
 def generate_transactions(order, df, totals, transType):
@@ -59,6 +60,6 @@ def generate_result(userID='testUser0'):
         batches.comp_trans(transaction)
     return batches.complete()
 
-def generate_metrics_df(userID, lookback, lookbackUnit):
+def generate_metrics(lookback=constants.ONE_WEEK,userID='testUser0',  lookbackUnit=constants.ONE_DAY):
     metrics = Metrics_DF(userID, lookback, lookbackUnit)
-    metrics.aggregate_retail_data()
+    return metrics.aggregate_retail_data()
