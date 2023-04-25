@@ -94,6 +94,7 @@ resource "aws_lambda_function" "api_lambda" {
   environment {
     variables = {
       ENV = "PROD"
+      LOG_LEVEL = "DEBUG"
     }
   }
 
@@ -261,6 +262,14 @@ resource "aws_apigatewayv2_route" "submit_order" {
 resource "aws_apigatewayv2_route" "submit_sale" {
   api_id               = aws_apigatewayv2_api.api_gateway.id
   route_key            = "POST /submit_sale"
+  target               = "integrations/${aws_apigatewayv2_integration.api_gateway_integration.id}"
+  authorization_scopes = []
+  request_models       = {}
+}
+
+resource "aws_apigatewayv2_route" "get_chart" {
+  api_id               = aws_apigatewayv2_api.api_gateway.id
+  route_key            = "POST /chart"
   target               = "integrations/${aws_apigatewayv2_integration.api_gateway_integration.id}"
   authorization_scopes = []
   request_models       = {}

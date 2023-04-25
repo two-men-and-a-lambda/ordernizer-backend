@@ -17,8 +17,8 @@ def test_api():
     bucket = boto3.resource(
         service_name='s3',
         region_name='us-east-1',
-        aws_access_key_id=os.getenv('aws_access_key_id'),
-        aws_secret_access_key=os.getenv('aws_secret_access_key')
+        utest_aws_access_key_id=os.getenv('utest_aws_access_key_id'),
+        utest_aws_secret_access_key=os.getenv('utest_aws_secret_access_key')
     ).Bucket('ordernizer-database-bucket')
     test_dict = {"submit_inventory": {"input": {"bananas": 20, "apples": 23, "timestamp": "2023-01-30 04:25:01"}, "expected": {"apples": 23, "bananas": 20}},
                  "submit_transaction": {"input": {"bananas": {"price": 10, "units": 20}, "apples": {"price": 30, "units": 100}, "timestamp": "2023-01-30 04:25:01"}, "expected": {"apples": 156, "bananas": 55}},
