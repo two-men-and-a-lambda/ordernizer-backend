@@ -60,6 +60,6 @@ def generate_result(userID='testUser0'):
         batches.comp_trans(transaction)
     return batches.complete()
 
-def generate_metrics(lookback=constants.ONE_WEEK,userID='testUser0',  lookbackUnit=constants.ONE_DAY):
+def generate_metrics(userID='testUser0', lookback=constants.ONE_WEEK, lookbackUnit=constants.ONE_DAY):
     metrics = Metrics_DF(userID, lookback, lookbackUnit)
     return metrics.aggregate_retail_data()
