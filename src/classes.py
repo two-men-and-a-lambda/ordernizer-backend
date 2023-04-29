@@ -133,7 +133,8 @@ class Metrics_DF:
         elif unit == 'W':
             return timedelta(weeks=amount)
         elif unit == 'M':
-            return timedelta(months=amount)
+            #TODO lazy bastards dont have a months feature, maybe do this right at some point
+            return timedelta(days=amount * 30)
     
     def get_plot_points(self):
         plot_points = []
