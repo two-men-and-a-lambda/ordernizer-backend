@@ -139,11 +139,21 @@ class Metrics_DF:
     def get_plot_points(self):
         plot_points = []
         rollingDate = self.reportEndDate
+        #we are calculating start dates, not end dates
+        rollingDate -= self.periodDelta
+
         
 
-        while rollingDate > self.lookbackDate:
-            plot_points.append(rollingDate)
+        while rollingDate >= self.lookbackDate:
+            if 'M' in self.periodUnit:
+                #TODO this logic will not hold up for february
+                resDate = (rollingDate + timedelta(days=30)).replace(month=rollingDate.month + 1,day=1)
+                plot_points.append(resDate)
+            else:
+                plot_points.append(rollingDate)
             rollingDate -= self.periodDelta
+
+            
 
         plot_points.reverse()
         return plot_points
@@ -177,9 +187,9 @@ class Metrics_DF:
 
         for periodStartDate in plotPoints:
             periodEndDate = periodStartDate + self.periodDelta
-            logging.info(periodStartDate.strftime("%m/%d/%Y") + ' to ' + periodEndDate.strftime("%m/%d/%Y") + '\n')
 
             salesFrame = self.df[(self.df['timestamp'] > periodStartDate) & (self.df['timestamp'] <= periodEndDate)]
+            logging.info('Data for period: ' + periodStartDate.strftime("%m/%d/%Y") + ' to ' + periodEndDate.strftime("%m/%d/%Y"))
             logging.info(salesFrame)
             logging.info('\n\n')
             
@@ -249,7 +259,18 @@ class Metrics_DF:
         #TODO some logic "if units are months (march, april, may)"
         # if units are days "monday tuesday wednesday"
         # if units are weeks 7/4-7/11, 7/12-7/19, 7/20-7/27
-        return periodStartDate.strftime('%a %m/%d')
+        unit = self.periodUnit[1]
+        if unit == 'D':
+            return periodStartDate.strftime('%a %m/%d')
+        elif unit == 'W':
+            periodEndDate = periodStartDate + timedelta(weeks=1)
+            endDate = periodEndDate.strftime('%m/%d')
+            startDate = periodStartDate.strftime('%m/%d')
+            return startDate + '-' + endDate
+        elif unit == 'M':
+            return periodStartDate.strftime('%B')
+
+        
 
     def timestampToDate(self, stamp):
         return datetime.strptime(stamp, '%Y-%m-%d %H:%M:%S')

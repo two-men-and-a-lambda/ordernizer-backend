@@ -52,6 +52,7 @@ def test_api():
 
 logging.basicConfig(level=logging.INFO)
 #a=get_table_data()
-a=get_sales_chart_data({'lookback':'3M', 'periodUnit': '1W'}, userID='testUserLocal')
+a=get_sales_chart_data({'lookback':'1M', 'periodUnit': '1W'}, userID='testUserLocal')
+
 #a = get_table_data('testUser0')
 logging.info(a)
