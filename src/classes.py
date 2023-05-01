@@ -120,7 +120,12 @@ class Metrics_DF:
     def get_lookback_date(self):
         if self.lookback in constants.PRESETS:
             delta = self.unit_lookup(self.lookback)
-            return self.reportEndDate - delta
+            resdate = self.reportEndDate - delta
+            if 'M' in self.periodUnit:
+                resdate = resdate.replace(day=15)
+                resdate += self.periodDelta
+                resdate.replace(day=1)
+            return resdate
         
         #TODO custom lookback date. Add logic later
         return self.lookback
@@ -134,24 +139,43 @@ class Metrics_DF:
             return timedelta(weeks=amount)
         elif unit == 'M':
             #TODO lazy bastards dont have a months feature, maybe do this right at some point
-            return timedelta(days=amount * 30)
+            return timedelta(days=amount * 32)
     
     def get_plot_points(self):
         plot_points = []
         rollingDate = self.reportEndDate
         #we are calculating start dates, not end dates
-        rollingDate -= self.periodDelta
+        if not 'M' in self.periodUnit:
+            rollingDate -= self.periodDelta
 
         
 
         while rollingDate >= self.lookbackDate:
             if 'M' in self.periodUnit:
-                #TODO this logic will not hold up for february
-                resDate = (rollingDate + timedelta(days=30)).replace(month=rollingDate.month + 1,day=1)
-                plot_points.append(resDate)
+                print('\n\n\nMONTHS')
+
+                print(rollingDate.strftime("%m/%d/%Y"))
+                rollingDate = rollingDate.replace(day=1)
+                print(rollingDate.strftime("%m/%d/%Y"))
+                plot_points.append(rollingDate)
+                rollingDate = rollingDate.replace(day=25)
+                print(rollingDate.strftime("%m/%d/%Y"))
+                rollingDate = rollingDate - self.periodDelta
+                print(rollingDate.strftime("%m/%d/%Y"))
+                # #TODO this logic will not hold up for february
+                # a= rollingDate.replace(day=1)
+                # print('\n\n\nMONTHS')
+                # print(rollingDate.strftime("%m/%d/%Y"))
+
+                # print(a.strftime("%m/%d/%Y"))
+                # b = a + timedelta(days=32)
+                # print(b.strftime("%m/%d/%Y"))
+                # resDate = b.replace(day=1)
+                # print(resDate.strftime("%m/%d/%Y"))
+                # plot_points.append(resDate)
             else:
                 plot_points.append(rollingDate)
-            rollingDate -= self.periodDelta
+                rollingDate -= self.periodDelta
 
             
 
